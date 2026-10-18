@@ -35,6 +35,7 @@ module api_engrad
   use gfnff_api
   use libpvol_api
   use lj
+  use mlip_api,only:mlip_engrad,finalize_mlip
   implicit none
 !>--- private module variables and parameters
   private
@@ -44,6 +45,7 @@ module api_engrad
   public :: gfnff_engrad
   public :: libpvol_engrad
   public :: lj_engrad !> RE-EXPORT
+  public :: mlip_engrad,finalize_mlip
 
 !=========================================================================================!
 !=========================================================================================!

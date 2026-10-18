@@ -24,6 +24,7 @@ program CREST
 !  use iso_fortran_env,wp => real64
   use crest_parameters !> Datatypes and constants
   use crest_data !> module for the main data storage (imports systemdata and timer)
+  use crest_calculator,only:finalize_mlip
   use crest_restartlog 
     USE, INTRINSIC :: IEEE_EXCEPTIONS
   implicit none
@@ -357,6 +358,8 @@ program CREST
   use ConfSolv_module
   call cs_shutdown(io)
   end block
+
+  call finalize_mlip()
 
 !=========================================================================================!
 !> one final cleanup

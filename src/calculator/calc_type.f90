@@ -49,10 +49,11 @@ module calc_type
     integer :: gfnff     = 9
     integer :: libpvol   = 10
     integer :: lj        = 11
+    integer :: mlip      = 12
   end type enum_jobtype
   type(enum_jobtype), parameter,public :: jobtype = enum_jobtype()
 
-  character(len=45),parameter,private :: jobdescription(12) = [ &
+  character(len=45),parameter,private :: jobdescription(13) = [ &
      & 'Unknown calculation type                    ', &
      & 'xTB calculation via external binary         ', &
      & 'Generic script execution                    ', &
@@ -64,7 +65,8 @@ module calc_type
      & 'GFN0*-xTB calculation via GFN0 lib          ', &
      & 'GFN-FF calculation via GFNFF lib            ', &
      & 'external pressure calculation via libpvol   ', &
-     & 'Lennard-Jones potential calculation         ' ]
+     & 'Lennard-Jones potential calculation         ', &
+     & 'ML potential via fmlip-relay                ' ]
 !&>
 
 !=========================================================================================!
@@ -93,6 +95,8 @@ module calc_type
     character(len=:),allocatable :: other
     character(len=:),allocatable :: binary      !> binary or generic script
     character(len=:),allocatable :: systemcall  !> systemcall for running generic scripts
+    character(len=:),allocatable :: mlip_backend
+    character(len=:),allocatable :: mlip_modelpath
     character(len=:),allocatable :: description !> see above jobdescription parameter
     character(len=:),allocatable :: shortflag   !> shorter job description
 
@@ -907,6 +911,8 @@ contains  !>--- Module routines start here
     if (allocated(self%other)) deallocate (self%other)
     if (allocated(self%binary)) deallocate (self%binary)
     if (allocated(self%systemcall)) deallocate (self%systemcall)
+    if (allocated(self%mlip_backend)) deallocate (self%mlip_backend)
+    if (allocated(self%mlip_modelpath)) deallocate (self%mlip_modelpath)
     if (allocated(self%description)) deallocate (self%description)
     if (allocated(self%wbo)) deallocate (self%wbo)
     if (allocated(self%dipgrad)) deallocate (self%dipgrad)
@@ -1047,6 +1053,12 @@ contains  !>--- Module routines start here
       self%shortflag =  'LIVPVOL'
     case( jobtype%lj )
       self%shortflag =  'LJ'
+    case( jobtype%mlip )
+      if (allocated(self%mlip_backend)) then
+        self%shortflag = 'MLIP/'//trim(self%mlip_backend)
+      else
+        self%shortflag = 'MLIP'
+      end if
     case default
       self%shortflag = 'undefined'
     end select
@@ -1113,6 +1125,14 @@ contains  !>--- Module routines start here
       case (xtblvl%ceh)
         write (iunit,fmt4) 'Charge Extended Hückel (CEH) model'
       end select
+    end if
+    if (self%id == jobtype%mlip) then
+      if (allocated(self%mlip_backend)) then
+        write (iunit,fmt3) 'MLIP backend',trim(self%mlip_backend)
+      end if
+      if (allocated(self%mlip_modelpath)) then
+        write (iunit,fmt3) 'MLIP model',trim(self%mlip_modelpath)
+      end if
     end if
     if (any((/jobtype%orca,jobtype%xtbsys,jobtype%turbomole, &
     &  jobtype%generic,jobtype%terachem/) == self%id)) then
@@ -1207,6 +1227,9 @@ contains  !>--- Module routines start here
     case ('gfn2','--gfn2')
       self%id = jobtype%tblite
       self%tblitelvl = 2
+    case ('mlip')
+      self%id = jobtype%mlip
+      self%mlip_backend = 'mace'
     case ('gfn1','--gfn1')
       self%id = jobtype%tblite
       self%tblitelvl = 1

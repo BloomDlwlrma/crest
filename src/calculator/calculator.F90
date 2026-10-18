@@ -55,6 +55,7 @@ module crest_calculator
 
 !>--- public module routines
   public :: potential_core
+  public :: finalize_mlip
   public :: engrad
   interface engrad
     module procedure :: engrad_mol
@@ -338,6 +339,11 @@ contains  !> MODULE PROCEDURES START HERE
     case (jobtype%tblite)
       !> tblite api call
       call tblite_engrad(molptr,calc%calcs(id),calc%etmp(id),calc%grdtmp(:,1:pnat,id),iostatus)
+
+    case (jobtype%mlip)
+      !> persistent ML potential via the fmlip-relay client
+      call mlip_engrad(molptr,calc%calcs(id),calc%etmp(id), &
+      &                calc%grdtmp(:,1:pnat,id),iostatus)
 
     case (jobtype%gfn0)
       !> GFN0-xTB api

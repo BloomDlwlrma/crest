@@ -150,6 +150,38 @@ When attempting to build with `gfortran` and `gcc`, add `-Dla_backend=mkl` to th
 By default the `meson` build will create a **statically** linked binary.
 </details>
 
+## Native MLIP calculation (MACE)
+
+This source tree adds a native `method = "mlip"` calculator using the pinned
+`fmlip-relay` Fortran/C client. Initialize the relay submodule before building:
+
+```bash
+git submodule update --init --recursive
+```
+
+The runtime environment must provide `fmlip-relay-server`, `mace-torch`, and ASE.
+To install the server package without changing an existing MACE/PyTorch installation:
+
+```bash
+python -m pip install --no-deps -e subprojects/fmlip-relay
+```
+
+Select a custom MACE `.model` in the CREST TOML input:
+
+```toml
+[[calculation.level]]
+method = "mlip"
+mlip_backend = "mace"
+mlip_modelpath = "/absolute/path/to/model.model"
+```
+
+CREST starts a persistent CPU/float64 relay server for each OpenMP worker that
+uses MLIP (up to the relay's limit of 16 instances) and shuts them down on normal
+exit. This backend currently supports neutral singlet systems only. A worker
+cannot switch model paths after its relay starts. Existing `method = "gfn2"`
+inputs remain routed to tblite. This source extension does not change the
+upstream CREST version number, which remains 3.0.2.
+
 
 ---
 

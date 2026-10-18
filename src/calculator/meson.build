@@ -27,6 +27,7 @@ srcs += files(
   'nonadiabatic.f90',
   'tblite_api.F90',
   'api_helpers.F90',
+  'mlip_api.f90',
   'api_engrad.f90', 
   'gradreader.f90',
   'libpvol.F90',
@@ -36,4 +37,6 @@ srcs += files(
   'generic_sc.f90',
   'turbom_sc.f90',
   'subprocess_engrad.f90',
+  '../../subprojects/fmlip-relay/src/c/socket_utils.c',
+  '../../subprojects/fmlip-relay/src/fortran/mlip_client.f90',
 )

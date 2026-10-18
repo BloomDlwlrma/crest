@@ -150,7 +150,7 @@ contains !> MODULE PROCEDURES START HERE
     type(datablock),intent(in) :: blk
     type(calculation_settings),intent(out) :: job
     integer,intent(inout) :: istat
-    logical :: rd
+    logical :: rd,ex
     integer :: i
     call job%deallocate()
     if ((blk%header .ne. 'calculation.level').and. &
@@ -164,6 +164,26 @@ contains !> MODULE PROCEDURES START HERE
         write (stdout,fmturk) '[['//blk%header//']]-block',blk%kv_list(i)%key
       end if
     end do
+    if (job%id == jobtype%mlip) then
+      if (.not.allocated(job%mlip_backend)) job%mlip_backend = 'mace'
+      if (.not.allocated(job%mlip_modelpath)) then
+        write (stderr,'(a)') 'method = "mlip" requires mlip_modelpath'
+        call creststop(status_config)
+      end if
+      if (len_trim(job%mlip_modelpath) == 0) then
+        write (stderr,'(a)') 'mlip_modelpath must not be empty'
+        call creststop(status_config)
+      end if
+      if (trim(job%mlip_backend) /= 'mace') then
+        write (stderr,'(a,a)') 'unsupported mlip_backend: ',trim(job%mlip_backend)
+        call creststop(status_config)
+      end if
+      inquire (file=trim(job%mlip_modelpath),exist=ex)
+      if (.not.ex) then
+        write (stderr,'(a,a)') 'MACE model file not found: ',trim(job%mlip_modelpath)
+        call creststop(status_input)
+      end if
+    end if
     return
   end subroutine parse_leveldata
   subroutine parse_setting_auto(env,job,kv,rd)
@@ -213,6 +233,9 @@ contains !> MODULE PROCEDURES START HERE
         job%id = jobtype%xtbsys
       case ('generic')
         job%id = jobtype%generic
+      case ('mlip')
+        job%id = jobtype%mlip
+        if (.not.allocated(job%mlip_backend)) job%mlip_backend = 'mace'
       case ('orca')
         job%id = jobtype%orca
       case ('turbomole','tm')
@@ -259,6 +282,12 @@ contains !> MODULE PROCEDURES START HERE
 
     case ('bin','binary','script')
       job%binary = kv%value_c
+
+    case ('mlip_backend')
+      job%mlip_backend = kv%value_c
+
+    case ('mlip_modelpath')
+      job%mlip_modelpath = kv%value_c
 
     case ('flags')
       job%other = kv%value_c

@@ -29,6 +29,7 @@ list(APPEND srcs
   "${dir}/nonadiabatic.f90"
   "${dir}/tblite_api.F90"
   "${dir}/api_helpers.F90"
+  "${dir}/mlip_api.f90"
   "${dir}/api_engrad.f90"
   "${dir}/gradreader.f90"
   "${dir}/libpvol.F90"
@@ -38,10 +39,11 @@ list(APPEND srcs
   "${dir}/generic_sc.f90"
   "${dir}/turbom_sc.f90"
   "${dir}/subprocess_engrad.f90"
+  "${PROJECT_SOURCE_DIR}/subprojects/fmlip-relay/src/c/socket_utils.c"
+  "${PROJECT_SOURCE_DIR}/subprojects/fmlip-relay/src/fortran/mlip_client.f90"
 )
 
 set(srcs ${srcs} PARENT_SCOPE)
-
 
 
 
